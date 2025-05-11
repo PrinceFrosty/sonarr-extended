@@ -1,0 +1,29 @@
+services:
+  sonarr:
+    security_opt: ["no-new-privileges:true"]
+    image: ghcr.io/princefrosty/sonarr-extended:latest
+    container_name: sonarr
+    restart: unless-stopped
+    environment:
+      PGID: 1000
+      PUID: 1000
+    volumes:
+      - "./config-sonarr/config/:/config/"
+      - "./data:/data/"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://eth0.me",
+          "&&",
+          "curl",
+          "-f",
+          "http://localhost:8989",
+        ]
+      interval: 180s
+      timeout: 10s
+      retries: 3
+    ports:
+      - "8989:8989"
