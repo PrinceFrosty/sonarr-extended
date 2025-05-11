@@ -1,13 +1,13 @@
-name: Get latest release version
+name: Fetch latest versions
 on:
-   push:
-    branches: [ "latest" ]
+  push:
+    branches: ["latest"]
     # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
-   pull_request:
-    branches: [ "latest" ]
-   schedule:
-    - cron:  '13 */8 * * *'
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: ["latest"]
+  schedule:
+    - cron: "13 */8 * * *"
 jobs:
   get-version:
     runs-on: ubuntu-latest
