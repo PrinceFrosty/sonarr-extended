@@ -1,4 +1,4 @@
-name: Docker - Publish
+name: Build and publish if new versions exist
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -7,8 +7,9 @@ name: Docker - Publish
 
 on:
   push:
-    paths:
-      - "latest-sonarr.txt"
+    branches: ["latest"]
+  schedule:
+    - cron: "13 */8 * * *"
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -17,7 +18,106 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  check-arr:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    outputs:
+      modified: ${{ steps.latest-arr.outputs.modified }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: git pull
+        run: git pull
+      # - uses: actions/download-artifact@v4
+      #   with:
+      #     github-token: ${{ secrets.GH_PAT }}
+      - name: Grab latest arr version
+        id: grab-new-arr
+        run: echo "new-arr=$(curl -sL https://api.github.com/repos/RandomNinjaAtk/arr-scripts | jq -r ".updated_at")" >> $GITHUB_OUTPUT
+      - name: Pick latest arr version
+        id: latest-arr
+        env:
+          new_arr: ${{ steps.grab-new-arr.outputs.new-arr }}
+        run: |
+          if [[ $new_arr != $(cat latest-arr-scripts.txt) ]];then
+            echo "modified=$(echo "true")" >> $GITHUB_OUTPUT;
+            echo "$new_arr" > latest-arr-scripts.txt;
+          else
+            echo "modified=$(echo "false")" >> $GITHUB_OUTPUT;
+          fi
+      # - name: Upload Artifact
+      #   if: steps.latest-arr.outputs.modified == 'true'
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: latest-arr-scripts
+      #     path: latest-arr-scripts.txt
+      #     overwrite: true
+      - name: Commit latest release version
+        if: steps.latest-arr.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'PrinceFrosty'
+          git config --global user.email '33556237+PrinceFrosty@users.noreply.github.com'
+          git commit -am "New arr version"
+      - name: Push changes
+        if: steps.latest-arr.outputs.modified == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+  check-sonarr:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    outputs:
+      modified: ${{ steps.latest-sonarr.outputs.modified }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: git pull
+        run: git pull
+      # - uses: actions/download-artifact@v4
+      #   with:
+      #     github-token: ${{ secrets.GH_PAT }}
+      - name: Grab latest sonarr version
+        id: grab-new-sonarr
+        run: echo "new-sonarr=$(curl -sL https://api.github.com/repos/linuxserver/docker-sonarr/releases/latest | jq -r ".tag_name")" >> $GITHUB_OUTPUT
+      - name: Pick latest sonarr version
+        id: latest-sonarr
+        env:
+          new_sonarr: ${{ steps.grab-new-sonarr.outputs.new-sonarr }}
+        run: |
+          if [[ $new_sonarr != $(cat latest-sonarr.txt) ]];then
+            echo "modified=$(echo "true")" >> $GITHUB_OUTPUT;
+            echo "$new_sonarr" > latest-sonarr.txt;
+          else
+            echo "modified=$(echo "false")" >> $GITHUB_OUTPUT;
+          fi
+      # - name: Upload Artifact
+      #   if: steps.latest-sonarr.outputs.modified == 'true'
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: latest-sonarr
+      #     path: latest-sonarr.txt
+      #     overwrite: true
+      - name: Commit latest release version
+        if: steps.latest-sonarr.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'PrinceFrosty'
+          git config --global user.email '33556237+PrinceFrosty@users.noreply.github.com'
+          git commit -am "New sonarr version"
+      - name: Push changes
+        if: steps.latest-sonarr.outputs.modified == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
   build:
+    needs: [check-arr, check-sonarr]
+    if: needs.check-arr.outputs.modified == 'true' || needs.check-sonarr.outputs.modified == 'true'
+
     runs-on: ubuntu-latest
     permissions:
       contents: read
