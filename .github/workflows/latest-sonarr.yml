@@ -18,7 +18,7 @@ jobs:
       - name: Fetch push date
         run: |
           curl -sL https://api.github.com/repos/RandomNinjaAtk/arr-scripts | \
-          jq -r ".pushed_at" > latest-arr-scripts.txt
+          jq -r ".updated_at" > latest-arr-scripts.txt
       - name: Fetch release version
         run: |
           curl -sL https://api.github.com/repos/linuxserver/docker-sonarr/releases/latest | \
