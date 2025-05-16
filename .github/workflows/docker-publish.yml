@@ -34,7 +34,7 @@ jobs:
       #     github-token: ${{ secrets.GH_PAT }}
       - name: Grab latest arr version
         id: grab-new-arr
-        run: echo "new-arr=$(curl -sL https://api.github.com/repos/RandomNinjaAtk/arr-scripts | jq -r ".updated_at")" >> $GITHUB_OUTPUT
+        run: echo "new-arr=$(curl -sL https://api.github.com/repos/RandomNinjaAtk/arr-scripts | jq -r ".pushed_at")" >> $GITHUB_OUTPUT
       - name: Pick latest arr version
         id: latest-arr
         env:
