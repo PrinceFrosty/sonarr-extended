@@ -34,13 +34,13 @@ jobs:
       #     github-token: ${{ secrets.GH_PAT }}
       - name: Grab latest arr version
         id: grab-new-arr
-        run: echo "new-arr=$(curl -sL https://api.github.com/repos/RandomNinjaAtk/arr-scripts | jq -r ".pushed_at")" >> $GITHUB_OUTPUT
+        run: echo "new_arr=$(tr -dc '0-9' <<< $(curl -sL https://api.github.com/repos/RandomNinjaAtk/arr-scripts | jq -r ".pushed_at"))" >> $GITHUB_OUTPUT
       - name: Pick latest arr version
         id: latest-arr
         env:
-          new_arr: ${{ steps.grab-new-arr.outputs.new-arr }}
+          new_arr: ${{ steps.grab-new-arr.outputs.new_arr }}
         run: |
-          if [[ $new_arr != $(cat latest-arr-scripts.txt) ]];then
+          if [[ $new_arr > $(cat latest-arr-scripts.txt) ]];then
             echo "modified=$(echo "true")" >> $GITHUB_OUTPUT;
             echo "$new_arr" > latest-arr-scripts.txt;
           else
@@ -82,13 +82,13 @@ jobs:
       #     github-token: ${{ secrets.GH_PAT }}
       - name: Grab latest sonarr version
         id: grab-new-sonarr
-        run: echo "new-sonarr=$(curl -sL https://api.github.com/repos/linuxserver/docker-sonarr/releases/latest | jq -r ".tag_name")" >> $GITHUB_OUTPUT
+        run: echo "new_sonarr=$(tr -dc '0-9' <<< $(curl -sL https://api.github.com/repos/linuxserver/docker-sonarr/releases/latest | jq -r ".tag_name"))" >> $GITHUB_OUTPUT
       - name: Pick latest sonarr version
         id: latest-sonarr
         env:
-          new_sonarr: ${{ steps.grab-new-sonarr.outputs.new-sonarr }}
+          new_sonarr: ${{ steps.grab-new-sonarr.outputs.new_sonarr }}
         run: |
-          if [[ $new_sonarr != $(cat latest-sonarr.txt) ]];then
+          if [[ $new_sonarr > $(cat latest-sonarr.txt) ]];then
             echo "modified=$(echo "true")" >> $GITHUB_OUTPUT;
             echo "$new_sonarr" > latest-sonarr.txt;
           else
