@@ -82,7 +82,7 @@ jobs:
       #     github-token: ${{ secrets.GH_PAT }}
       - name: Grab latest sonarr version
         id: grab-new-sonarr
-        run: echo "new_sonarr=$(tr -dc '0-9' <<< $(curl -sL https://api.github.com/repos/linuxserver/docker-sonarr/releases/latest | jq -r ".tag_name"))" >> $GITHUB_OUTPUT
+        run: echo "new_sonarr=$(tr -dc '0-9' <<< $(curl -sL https://api.github.com/repos/linuxserver/docker-sonarr/branches/master | jq -r ".commit.commit.committer.date"))" >> $GITHUB_OUTPUT
       - name: Pick latest sonarr version
         id: latest-sonarr
         env:
